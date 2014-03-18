@@ -11,7 +11,7 @@ using Microsoft.ServiceBus.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    internal class ServiceBusConnection : IDisposable
+    public class ServiceBusConnection : IDisposable
     {
         private const int DefaultReceiveBatchSize = 1000;
         private static readonly TimeSpan BackoffAmount = TimeSpan.FromSeconds(20);
