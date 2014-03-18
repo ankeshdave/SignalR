@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
     public class ServiceBusConnectionFacts
     {
         [Fact]
-        public void ServiceBusConstructorDoesNotThrowWithInvalidConnectionString()
+        public void ConstructorDoesNotThrowWithInvalidConnectionString()
         {
             var config = new ServiceBusScaleoutConfiguration("connection","topic");
             Assert.DoesNotThrow(() => new ServiceBusConnection(config, new TraceSource("trace")));
