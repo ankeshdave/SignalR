@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public class OnConnectedAsync : HostedTest
         {
             [Fact]
-            public void ConnectionsWithTheSameConnectionIdSSECloseGracefully()
+            public async Task ConnectionsWithTheSameConnectionIdSSECloseGracefully()
             {
                 using (var host = new MemoryHost())
                 {
@@ -48,16 +48,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                         tasks.Add(ProcessRequest(host, "serverSentEvents", id));
                     }
 
-                    ProcessRequest(host, "serverSentEvents", id);
+                    var finalRequest = ProcessRequest(host, "serverSentEvents", id);
 
-                    Task.WaitAll(tasks.ToArray());
+                    await WhenAll(tasks.ToArray(), TimeSpan.FromSeconds(30));
 
-                    Assert.True(tasks.All(t => !t.IsFaulted));
+                    Assert.True(tasks.All(t => t.Status == TaskStatus.RanToCompletion));
                 }
             }
 
             [Fact]
-            public void ConnectionsWithTheSameConnectionIdLongPollingCloseGracefully()
+            public async Task ConnectionsWithTheSameConnectionIdLongPollingCloseGracefully()
             {
                 using (var host = new MemoryHost())
                 {
@@ -82,17 +82,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                         tasks.Add(ProcessRequest(host, "longPolling", id));
                     }
 
-                    ProcessRequest(host, "longPolling", id);
+                    var finalRequest = ProcessRequest(host, "longPolling", id);
 
-                    Assert.True(Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(10)));
+                    await WhenAll(tasks.ToArray(), TimeSpan.FromSeconds(30));
 
-                    Assert.True(tasks.All(t => !t.IsFaulted));
+                    Assert.True(tasks.All(t => t.Status == TaskStatus.RanToCompletion));
                 }
             }
 
             private static Task ProcessRequest(MemoryHost host, string transport, string connectionToken)
             {
                 return host.Get("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken, r => { }, isLongRunning: true);
+            }
+
+            private static Task WhenAll(Task[] tasks, TimeSpan timeout)
+            {
+                return Task.WhenAny(Task.WhenAll(tasks), Task.Delay(timeout));
             }
 
             [Fact]
